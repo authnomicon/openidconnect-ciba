@@ -28,14 +28,14 @@ exports = module.exports = function(service, parse, authenticate, state) {
   
   
   return [
-    parse('application/x-www-form-urlencoded'),
-    authenticate('oauth2-client-authentication/*'),
+    //parse('application/x-www-form-urlencoded'),
+    //authenticate('oauth2-client-authentication/*'),
     go
   ];
 };
 
 exports['@require'] = [
-  'http://i.authnomicon.org/openidconnect/ciba/AuthorizationService'
+  'http://i.authnomicon.org/openidconnect/ciba/AuthorizationService',
   'http://i.bixbyjs.org/http/middleware/parse',
   'http://i.bixbyjs.org/http/middleware/authenticate',
 ];
