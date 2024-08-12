@@ -1,0 +1,11 @@
+{
+  "name": "@authnomicon/openidconnect-ciba",
+  "version": "0.0.0",
+  "description": "Client-Initiated Backchannel Authentication components for the Authnomicon project.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC"
+}
