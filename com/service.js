@@ -10,5 +10,5 @@ exports = module.exports = function(authorizeHandler) {
 exports['@implements'] = 'http://i.bixbyjs.org/http/Service';
 exports['@path'] = '/oauth2/bc-authorize';
 exports['@require'] = [
-  './handlers/authenticate'
+  './handlers/authorize'
 ];
