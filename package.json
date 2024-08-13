@@ -8,6 +8,15 @@
   },
   "author": "",
   "license": "ISC",
+  "assembly": {
+    "namespace": "org.authnomicon/oauth2/ciba",
+    "components": [
+      "service"
+    ]
+  },
+  "directories": {
+    "com": "com"
+  },
   "devDependencies": {
     "chai": "^4.3.4",
     "chai-express-handler": "^0.1.1",
@@ -18,6 +27,8 @@
     "sinon-chai": "^3.7.0"
   },
   "dependencies": {
+    "aaatrio": "^0.0.2",
+    "body-parser": "^1.20.2",
     "express": "^4.19.2"
   }
 }
