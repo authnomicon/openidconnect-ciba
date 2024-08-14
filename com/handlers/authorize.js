@@ -5,11 +5,23 @@ exports = module.exports = function(service, authenticator) {
   function go(req, res, next) {
     console.log('BC AUTHORIZE!');
     console.log(req.body)
+    console.log(req.user)
     
-    //var zreq = new aaa.Request(req.client);
-    // TODO: populate req.client with client auth
+    // The 'user' property of `req` holds the authenticated user.  In the case
+    // of the backchannel authentication endpoint, the property will contain the
+    // OAuth 2.0 client.
+    var client = req.user;
+    
+    var scope = req.body.scope;
+    if (scope) {
+      scope = scope.split(' ');
+    }
+    
+    
+    
     // TODO: authenticate based on hints, if possible to set req.user
-    var zreq = new aaa.Request(req.client);
+    var zreq = new aaa.Request(client);
+    zreq.scope = scope;
     //zreq.user = txn.user;
     //zreq.prompts = txn.req.prompt;
     //zreq.loginHint = txn.req.loginHint;
@@ -33,6 +45,12 @@ exports = module.exports = function(service, authenticator) {
           expires_in: 120
         });
       }
+      
+      
+      return res.json({
+        auth_req_id: '1c266114-a1be-4252-8ad1-04986c5b9ac1',
+        expires_in: 120
+      });
     
     });
     
@@ -67,9 +85,7 @@ exports = module.exports = function(service, authenticator) {
   
   return [
     require('body-parser').urlencoded({ extended: false }),
-    //authenticator.authenticate(['oauth2-client-authentication/client_secret_basic', 'oauth2-client-authentication/client_secret_post', 'oauth2-client-authentication/none'], { session: false }),
-    //parse('application/x-www-form-urlencoded'),
-    //authenticate('oauth2-client-authentication/*'),
+    authenticator.authenticate(['oauth2-client-authentication/client_secret_basic', 'oauth2-client-authentication/client_secret_post', 'oauth2-client-authentication/none'], { session: false }),
     go
   ];
 };

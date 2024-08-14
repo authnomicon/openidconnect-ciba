@@ -11,11 +11,11 @@ describe('handlers/authorize', function() {
   it('should create handler', function() {
     var authenticator = new Object();
     authenticator.authenticate = sinon.spy();
-    var handler = factory(authenticator);
+    var handler = factory(undefined, authenticator);
     
     expect(handler).to.be.an('array');
-    //expect(authenticator.authenticate).to.be.calledOnce;
-    //expect(authenticator.authenticate).to.be.calledWith([ 'session', 'anonymous' ], { multi: true });
+    expect(authenticator.authenticate).to.be.calledOnce;
+    expect(authenticator.authenticate).to.be.calledWith([ 'oauth2-client-authentication/client_secret_basic', 'oauth2-client-authentication/client_secret_post', 'oauth2-client-authentication/none' ], { session: false });
   });
   
   describe('handler', function() {
@@ -23,7 +23,14 @@ describe('handlers/authorize', function() {
     // https://openid.net/specs/openid-client-initiated-backchannel-authentication-core-1_0.html
     it('should handle request from specification', function(done) {
       var service = sinon.stub().yieldsAsync(null);
-      var handler = factory(service);
+      var authenticator = new Object();
+      authenticator.authenticate = function(name, options) {
+        return function(req, res, next) {
+          req.user = { id: 's6BhdRkqt3', name: 'My Example Client' };
+          next();
+        };
+      };
+      var handler = factory(service, authenticator);
       
       chai.express.use(handler)
         .request(function(req) {
@@ -38,6 +45,11 @@ describe('handlers/authorize', function() {
         })
         .finish(function() {
           expect(service).to.have.been.calledOnce;
+          expect(service.getCall(0).args[0].client).to.deep.equal({
+            id: 's6BhdRkqt3',
+            name: 'My Example Client'
+          });
+          expect(service.getCall(0).args[0].scope).to.deep.equal([ 'openid', 'email', 'example-scope' ]);
           
           expect(this).to.have.status(200);
           expect(this).to.have.body({

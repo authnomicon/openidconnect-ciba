@@ -11,6 +11,7 @@
   "assembly": {
     "namespace": "org.authnomicon/oauth2/ciba",
     "components": [
+      "exchange",
       "service"
     ]
   },
