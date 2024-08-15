@@ -64,7 +64,13 @@ describe('handlers/authorize', function() {
             });
           expect(prompts.dispatch).to.have.been.calledOnceWith(
             'consent', {
-              scope: [ 'email' ]
+              name: 'consent',
+              params: { scope: [ 'email' ] },
+              transactionID: '1c266114-a1be-4252-8ad1-04986c5b9ac1',
+              transaction: {
+                client: { id: 's6BhdRkqt3', name: 'My Example Client' },
+                request: { scope: [ 'openid', 'email', 'example-scope' ] }
+              }
             });
           
           expect(this).to.have.status(200);

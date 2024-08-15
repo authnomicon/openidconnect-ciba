@@ -72,12 +72,15 @@ exports = module.exports = function(service, prompts, store, authenticator) {
   }
   
   function prompt(req, res, next) {
+    var prompt = res.locals.prompt;
     var chl = {
+      name: prompt,
+      params: res.locals.params,
       transactionID: res.locals.transactionID,
-    }
+      transaction: res.locals.transaction
+    };
     
-    
-    prompts.dispatch(res.locals.prompt, res.locals.params, function(err, o) {
+    prompts.dispatch(prompt, chl, function(err, o) {
       if (err) { return next(err); }
       return next();
     });
