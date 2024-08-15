@@ -11,7 +11,7 @@ describe('handlers/authorize', function() {
   it('should create handler', function() {
     var authenticator = new Object();
     authenticator.authenticate = sinon.spy();
-    var handler = factory(undefined, authenticator);
+    var handler = factory(undefined, undefined, authenticator);
     
     expect(handler).to.be.an('array');
     expect(authenticator.authenticate).to.be.calledOnce;
@@ -22,7 +22,11 @@ describe('handlers/authorize', function() {
     
     // https://openid.net/specs/openid-client-initiated-backchannel-authentication-core-1_0.html
     it('should handle request from specification', function(done) {
-      var service = sinon.stub().yieldsAsync(null);
+      var service = sinon.spy(function(req, cb) {
+        return cb(null, req.prompt('consent'));
+      });
+      var store = sinon.stub().yieldsAsync(null);
+      store.store = sinon.stub().yieldsAsync(null, '1c266114-a1be-4252-8ad1-04986c5b9ac1');
       var authenticator = new Object();
       authenticator.authenticate = function(name, options) {
         return function(req, res, next) {
@@ -30,7 +34,7 @@ describe('handlers/authorize', function() {
           next();
         };
       };
-      var handler = factory(service, authenticator);
+      var handler = factory(service, store, authenticator);
       
       chai.express.use(handler)
         .request(function(req) {

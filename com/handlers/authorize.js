@@ -1,6 +1,6 @@
 var aaa = require('aaatrio');
 
-exports = module.exports = function(service, authenticator) {
+exports = module.exports = function(service, store, authenticator) {
   
   function go(req, res, next) {
     console.log('BC AUTHORIZE!');
@@ -13,8 +13,20 @@ exports = module.exports = function(service, authenticator) {
     var client = req.user;
     
     var scope = req.body.scope;
+    var clientNotificationToken = req.body.client_notification_token;
+    var acrValues = req.body.acr_values;
+    var loginHintToken = req.body.login_hint_token;
+    var idTokenHint = req.body.id_token_hint;
+    var loginHint = req.body.login_hint;
+    var bindingMessage = req.body.binding_message;
+    var userCode = req.body.user_code;
+    var requestedExpiry = req.body.requested_expiry;
+    
     if (scope) {
       scope = scope.split(' ');
+    }
+    if (acrValues) {
+      acrValues = acrValues.split(' ');
     }
     
     
@@ -40,11 +52,37 @@ exports = module.exports = function(service, authenticator) {
       if (!zres) {
         // Serialize the session (transaction).
         
+        // WTF: why would this be the case.  should error if no response
+        
+        
         return res.json({
           auth_req_id: '1c266114-a1be-4252-8ad1-04986c5b9ac1',
           expires_in: 120
         });
       }
+      
+      console.log('SERIALIZING TRANSACTION');
+      var txn = {
+        client: client,
+        req: {
+          scope: scope
+        }
+      }
+      
+      store.store(req, txn, function(err, tid) {
+        console.log('STORED!');
+        console.log(err);
+        console.log(tid);
+        
+        return res.json({
+          auth_req_id: tid,
+          expires_in: 120
+        });
+      })
+      
+      
+      return;
+      
       
       
       return res.json({
@@ -92,5 +130,6 @@ exports = module.exports = function(service, authenticator) {
 
 exports['@require'] = [
   'http://i.authnomicon.org/oauth2/AuthorizationService',
+  'module:oauth2orize-ciba.TransactionStore',
   'module:passport.Authenticator'
 ];
