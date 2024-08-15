@@ -2,11 +2,7 @@ var aaa = require('aaatrio');
 
 exports = module.exports = function(service, store, authenticator) {
   
-  function go(req, res, next) {
-    console.log('BC AUTHORIZE!');
-    console.log(req.body)
-    console.log(req.user)
-    
+  function authorize(req, res, next) {
     // The 'user' property of `req` holds the authenticated user.  In the case
     // of the backchannel authentication endpoint, the property will contain the
     // OAuth 2.0 client.
@@ -74,10 +70,18 @@ exports = module.exports = function(service, store, authenticator) {
         console.log(err);
         console.log(tid);
         
+        if (err) { return next(err); }
+        res.locals.transactionID = tid;
+        next();
+        
+        
+        
+        /*
         return res.json({
           auth_req_id: tid,
           expires_in: 120
         });
+        */
       })
       
       
@@ -120,11 +124,26 @@ exports = module.exports = function(service, store, authenticator) {
     });
   }
   
+  function prompt(req, res, next) {
+    next();
+  }
+  
+  function respond(req, res, next) {
+    console.log(res.locals);
+    
+    return res.json({
+      auth_req_id: res.locals.transactionID,
+      expires_in: 120
+    });
+  }
+  
   
   return [
     require('body-parser').urlencoded({ extended: false }),
     authenticator.authenticate(['oauth2-client-authentication/client_secret_basic', 'oauth2-client-authentication/client_secret_post', 'oauth2-client-authentication/none'], { session: false }),
-    go
+    authorize,
+    prompt,
+    respond
   ];
 };
 
