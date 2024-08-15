@@ -11,7 +11,7 @@ describe('handlers/authorize', function() {
   it('should create handler', function() {
     var authenticator = new Object();
     authenticator.authenticate = sinon.spy();
-    var handler = factory(undefined, undefined, authenticator);
+    var handler = factory(undefined, undefined, undefined, authenticator);
     
     expect(handler).to.be.an('array');
     expect(authenticator.authenticate).to.be.calledOnce;
@@ -23,9 +23,11 @@ describe('handlers/authorize', function() {
     // https://openid.net/specs/openid-client-initiated-backchannel-authentication-core-1_0.html
     it('should handle request from specification', function(done) {
       var service = sinon.spy(function(req, cb) {
-        return cb(null, req.prompt('consent'));
+        return cb(null, req.prompt('consent', { scope: [ 'email' ] }));
       });
-      var store = sinon.stub().yieldsAsync(null);
+      var prompts = new Object();
+      prompts.dispatch = sinon.stub().yieldsAsync(null);
+      var store = new Object();
       store.store = sinon.stub().yieldsAsync(null, '1c266114-a1be-4252-8ad1-04986c5b9ac1');
       var authenticator = new Object();
       authenticator.authenticate = function(name, options) {
@@ -34,7 +36,8 @@ describe('handlers/authorize', function() {
           next();
         };
       };
-      var handler = factory(service, store, authenticator);
+      
+      var handler = factory(service, prompts, store, authenticator);
       
       chai.express.use(handler)
         .request(function(req) {
@@ -54,6 +57,15 @@ describe('handlers/authorize', function() {
             name: 'My Example Client'
           });
           expect(service.getCall(0).args[0].scope).to.deep.equal([ 'openid', 'email', 'example-scope' ]);
+          expect(store.store).to.have.been.calledOnceWith(
+            this.req, {
+              client: { id: 's6BhdRkqt3', name: 'My Example Client' },
+              request: { scope: [ 'openid', 'email', 'example-scope' ] }
+            });
+          expect(prompts.dispatch).to.have.been.calledOnceWith(
+            'consent', {
+              scope: [ 'email' ]
+            });
           
           expect(this).to.have.status(200);
           expect(this).to.have.body({

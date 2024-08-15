@@ -1,6 +1,6 @@
 var aaa = require('aaatrio');
 
-exports = module.exports = function(service, store, authenticator) {
+exports = module.exports = function(service, prompts, store, authenticator) {
   
   function authorize(req, res, next) {
     // The 'user' property of `req` holds the authenticated user.  In the case
@@ -60,7 +60,7 @@ exports = module.exports = function(service, store, authenticator) {
       console.log('SERIALIZING TRANSACTION');
       var txn = {
         client: client,
-        req: {
+        request: {
           scope: scope
         }
       }
@@ -72,6 +72,9 @@ exports = module.exports = function(service, store, authenticator) {
         
         if (err) { return next(err); }
         res.locals.transactionID = tid;
+        res.locals.transaction = txn;
+        res.locals.prompt = zres.prompt;
+        res.locals.params = zres.params;
         next();
         
         
@@ -125,7 +128,26 @@ exports = module.exports = function(service, store, authenticator) {
   }
   
   function prompt(req, res, next) {
-    next();
+    console.log('PROMPTING!!!!');
+    console.log(res.locals);
+    
+    
+    var chl = {
+      transactionID: res.locals.transactionID,
+    }
+    
+    
+    prompts.dispatch(res.locals.prompt, res.locals.params, function(err, o) {
+      console.log('OUT');
+      console.log(err);
+      console.log(o);
+      
+      
+      if (err) { return next(err); }
+      return next();
+    });
+    
+    //next();
   }
   
   function respond(req, res, next) {
@@ -149,6 +171,7 @@ exports = module.exports = function(service, store, authenticator) {
 
 exports['@require'] = [
   'http://i.authnomicon.org/oauth2/AuthorizationService',
+  'module:@authnomicon/prompts-oob.Router',
   'module:oauth2orize-ciba.TransactionStore',
   'module:passport.Authenticator'
 ];
