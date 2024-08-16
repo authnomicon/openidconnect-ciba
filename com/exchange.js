@@ -1,18 +1,10 @@
 var ciba = require('oauth2orize-ciba');
 
-
 exports = module.exports = function(store) {
-  
-  
-  // TODO: load extensions (ie, oidc)
   
   return Promise.resolve(null)
     .then(function() {
-      
-      
-      //return function(req, res, next) {
-      //  console.log('CIBA?');
-      //}
+      // TODO: Load extensions (ie, for issuing ID tokens) prior to this
       
       return ciba.exchange.ciba(function(client, authReqID, cb) {
         console.log('ISSUE...');
@@ -26,9 +18,18 @@ exports = module.exports = function(store) {
           
           if (txn.allow == undefined) {
             console.log('ERROR WITH PENDING....');
+            txn.allow = true;
+            
+            store.update(undefined, authReqID, txn, function() {
+              console.log('transaction now approved!');
+            })
             
             return cb(new ciba.TokenError('Pending', 'authorization_pending'))
           }
+          
+          
+          console.log('TOKEN IS ALLOWED, ISSUE TOKEN');
+          
           
           
         });
