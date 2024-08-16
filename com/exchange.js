@@ -1,27 +1,29 @@
 var ciba = require('oauth2orize-ciba');
 
-exports = module.exports = function(store) {
+exports = module.exports = function(ats, ts) {
   
   return Promise.resolve(null)
     .then(function() {
       // TODO: Load extensions (ie, for issuing ID tokens) prior to this
       
       return ciba.exchange.ciba(function(client, authReqID, cb) {
-        console.log('ISSUE...');
-        console.log(client);
-        console.log(authReqID);
         
-        store.load(authReqID, function(err, txn) {
-          console.log('LOADED');
-          console.log(err);
-          console.log(txn);
+        ts.load(authReqID, function(err, txn) {
+          if (err) { return cb(err); }
           
-          if (txn.allow == undefined) {
+          if (!txn.response) {
             console.log('ERROR WITH PENDING....');
-            //txn.allow = true;
+            
             
             /*
-            store.update(undefined, authReqID, txn, function() {
+            txn.user = {
+              id: '500'
+            }
+            txn.response = {
+              allow: true
+            }
+            
+            ts.update(undefined, authReqID, txn, function() {
               console.log('transaction now approved!');
             })
             */
@@ -31,13 +33,23 @@ exports = module.exports = function(store) {
           
           
           console.log('TOKEN IS ALLOWED, ISSUE TOKEN');
+          console.log(txn);
           
+          var msg = {
+            user: txn.user,
+            client: txn.client,
+            scope: txn.response.scope
+          };
           
-          
+          ats.issue(msg, function(err, token) {
+            console.log('ISSUED ACCESS TOKEN');
+            console.log(err);
+            console.log(token);
+            
+            if (err) { return cb(err); }
+            return cb(null, token);
+          });
         });
-        
-        //return cb(null, 'G5kXH2wHvUra0sHlDy1iTkDJgsgUO1bN')
-        
       });
     });
 };
@@ -45,5 +57,6 @@ exports = module.exports = function(store) {
 exports['@implements'] = 'module:oauth2orize.tokenRequestHandler';
 exports['@type'] = 'urn:openid:params:grant-type:ciba';
 exports['@require'] = [
+  'module:@authnomicon/oauth2.AccessTokenService',
   'module:oauth2orize-ciba.TransactionStore'
 ];
