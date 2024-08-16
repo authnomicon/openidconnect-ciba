@@ -18,13 +18,15 @@ exports = module.exports = function(store) {
           
           if (txn.allow == undefined) {
             console.log('ERROR WITH PENDING....');
-            txn.allow = true;
+            //txn.allow = true;
             
+            /*
             store.update(undefined, authReqID, txn, function() {
               console.log('transaction now approved!');
             })
+            */
             
-            return cb(new ciba.TokenError('Pending', 'authorization_pending'))
+            return cb(new ciba.TokenError('Request is pending authorization', 'authorization_pending'))
           }
           
           
