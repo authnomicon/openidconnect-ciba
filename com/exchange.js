@@ -12,9 +12,6 @@ exports = module.exports = function(ats, ts) {
           if (err) { return cb(err); }
           
           if (!txn.response) {
-            console.log('ERROR WITH PENDING....');
-            
-            
             /*
             txn.user = {
               id: '500'
@@ -31,10 +28,6 @@ exports = module.exports = function(ats, ts) {
             return cb(new ciba.TokenError('Request is pending authorization', 'authorization_pending'))
           }
           
-          
-          console.log('TOKEN IS ALLOWED, ISSUE TOKEN');
-          console.log(txn);
-          
           var msg = {
             user: txn.user,
             client: txn.client,
@@ -42,11 +35,8 @@ exports = module.exports = function(ats, ts) {
           };
           
           ats.issue(msg, function(err, token) {
-            console.log('ISSUED ACCESS TOKEN');
-            console.log(err);
-            console.log(token);
-            
             if (err) { return cb(err); }
+            // TODO: add expiration, etc
             return cb(null, token);
           });
         });
